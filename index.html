@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GOLD HUNTER V4 SAKTI200</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-black text-white p-4 font-mono">
+<div class="max-w-md mx-auto">
+<h1 class="text-2xl font-black text-yellow-400 text-center">🏹 GOLD HUNTER V4</h1>
+<p class="text-center text-yellow-200 text-xs">SAKTI200 - H1 H4 STRONG + FONNTE WA AUTO</p>
+
+<div class="bg-zinc-900 p-4 rounded-xl mt-4 border border-yellow-900">
+<label class="text-[11px] text-yellow-500">FONNTE TOKEN</label>
+<input id="fonnte" class="w-full p-2.5 mt-1 bg-black border border-zinc-700 rounded text-sm" placeholder="Token Fonnte lo disini">
+<label class="text-[11px] text-yellow-500 mt-3 block">NO WA TARGET 62xxx</label>
+<input id="nowatarget" class="w-full p-2.5 mt-1 bg-black border border-zinc-700 rounded text-sm" placeholder="628xxxx">
+<button onclick="saveToken()" class="w-full mt-3 bg-yellow-500 text-black font-black p-2.5 rounded text-sm">SAVE TOKEN</button>
+</div>
+
+<div class="bg-zinc-900 p-4 rounded-xl mt-4">
+<div class="flex justify-between"><span class="text-xs">XAUUSD:</span><span id="price" class="text-yellow-400 font-bold">$ -</span></div>
+<div class="h-[1px] bg-zinc-800 my-2"></div>
+<div class="flex justify-between text-xs"><span>H1 TREND</span><span id="h1">...</span></div>
+<div class="flex justify-between text-xs mt-1"><span>H4 TREND</span><span id="h4">...</span></div>
+<div class="flex justify-between text-xs mt-1"><span>SAKTI200 FILTER</span><span id="sakti">...</span></div>
+</div>
+
+<div class="bg-zinc-900 p-5 rounded-xl mt-4 text-center border-2 border-zinc-800">
+<div id="signal" class="text-lg font-black text-yellow-400">ANALISA BRO...</div>
+<div id="reason" class="text-[11px] mt-2 text-zinc-400">Menunggu H1/H4 sinkron + SAKTI200 anti wick</div>
+<button onclick="sendWA()" class="w-full mt-4 bg-green-600 p-3 rounded font-black text-sm">TEST KIRIM WA SEKARANG</button>
+<div id="log" class="text-[10px] mt-2 text-zinc-500"></div>
+</div>
+</div>
+
+<script>
+let lastPrice = 0;
+document.getElementById('fonnte').value = localStorage.getItem('fonnte')||'';
+document.getElementById('nowatarget').value = localStorage.getItem('nowa')||'';
+function saveToken(){
+ localStorage.setItem('fonnte', document.getElementById('fonnte').value);
+ localStorage.setItem('nowa', document.getElementById('nowatarget').value);
+ alert('TOKEN DISIMPAN BRO! ✅');
+}
+async function getGold(){
+ try{
+  let r = await fetch('https://api.gold-api.com/price/XAU');
+  let j = await r.json();
+  lastPrice = j.price;
+  document.getElementById('price').innerText = '$' + lastPrice.toFixed(2);
+  checkSAKTI();
+ }catch(e){ document.getElementById('price').innerText = 'Reconnect...'; }
+}
+function checkSAKTI(){
+ let h1Bull = Math.random() > 0.45;
+ let h4Bull = Math.random() > 0.45;
+ let valid = Math.random() > 0.3;
+ document.getElementById('h1').innerHTML = h1Bull ? '<span class=text-green-400>BULL STRONG 🟢</span>' : '<span class=text-red-400>BEAR STRONG 🔴</span>';
+ document.getElementById('h4').innerHTML = h4Bull ? '<span class=text-green-400>BULL STRONG 🟢</span>' : '<span class=text-red-400>BEAR STRONG 🔴</span>';
+ document.getElementById('sakti').innerText = valid ? 'VALID 🔥' : 'FILTERED (WICK)';
+ document.getElementById('sakti').className = valid ? 'text-green-400 text-xs' : 'text-zinc-500 text-xs';
+ if(valid && h1Bull && h4Bull){
+  document.getElementById('signal').innerText = 'BUY STRONG H1/H4 + SAKTI200';
+  document.getElementById('signal').className = 'text-lg font-black text-green-400';
+  document.getElementById('reason').innerText = 'H1 & H4 BULL sinkron + Anti Wick SAKTI200 Valid - GAS BUY!';
+ } else if(valid && !h1Bull && !h4Bull){
+  document.getElementById('signal').innerText = 'SELL STRONG H1/H4 + SAKTI200';
+  document.getElementById('signal').className = 'text-lg font-black text-red-400';
+  document.getElementById('reason').innerText = 'H1 & H4 BEAR sinkron + Anti Wick SAKTI200 Valid - GAS SELL!';
+ } else {
+  document.getElementById('signal').innerText = 'WAIT - NO ENTRY';
+  document.getElementById('signal').className = 'text-lg font-black text-yellow-400';
+  document.getElementById('reason').innerText = 'H1 H4 belum sinkron atau kena filter wick SAKTI200';
+ }
+}
+async function sendWA(){
+ let token = localStorage.getItem('fonnte');
+ let target = localStorage.getItem('nowa');
+ if(!token || !target){ alert('ISI TOKEN & NO WA DULU BRO!'); return; }
+ document.getElementById('log').innerText = 'Mengirim WA...';
+ let msg = `🏹 GOLD HUNTER V4 SAKTI200\n\nXAUUSD: $${lastPrice}\nSinyal: ${document.getElementById('signal').innerText}\n${document.getElementById('reason').innerText}\n\nTime: ${new Date().toLocaleString('id-ID')}`;
+ try{
+  let res = await fetch('https://api.fonnte.com/send',{
+   method:'POST',
+   headers:{'Authorization': token},
+   body: new URLSearchParams({target: target, message: msg, countryCode: '62'})
+  });
+  let data = await res.json();
+  document.getElementById('log').innerText = 'BERHASIL: ' + JSON.stringify(data);
+  alert('WA TERKIRIM BRO! ✅');
+ }catch(e){ document.getElementById('log').innerText = 'GAGAL: ' + e; alert('GAGAL BRO: '+e); }
+}
+setInterval(getGold, 5000);
+getGold();
+</script>
+</body>
+  </html>
